@@ -20,10 +20,31 @@ public static class SetsAndMaps
     /// </summary>
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
+{
+    var wordSet = new HashSet<string>(words);
+    var result = new List<string>();
+    var processed = new HashSet<string>();
+    
+    foreach (var word in words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        // Skip if already processed or if both letters are the same
+        if (processed.Contains(word) || word[0] == word[1])
+            continue;
+            
+        // Create the reversed word
+        var reversed = new string(new char[] { word[1], word[0] });
+        
+        // Check if reversed word exists in set
+        if (wordSet.Contains(reversed))
+        {
+            result.Add($"{word} & {reversed}");
+            processed.Add(word);
+            processed.Add(reversed);
+        }
     }
+    
+    return result.ToArray();
+}
 
     /// <summary>
     /// Read a census file and summarize the degrees (education)
@@ -37,17 +58,21 @@ public static class SetsAndMaps
     /// <param name="filename">The name of the file to read</param>
     /// <returns>fixed array of divisors</returns>
     public static Dictionary<string, int> SummarizeDegrees(string filename)
+{
+    var degrees = new Dictionary<string, int>();
+    foreach (var line in File.ReadLines(filename))
     {
-        var degrees = new Dictionary<string, int>();
-        foreach (var line in File.ReadLines(filename))
-        {
-            var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
-        }
-
-        return degrees;
+        var fields = line.Split(",");
+        var degree = fields[3]; // 4th column (0-indexed)
+        
+        if (degrees.ContainsKey(degree))
+            degrees[degree]++;
+        else
+            degrees[degree] = 1;
     }
 
+    return degrees;
+}
     /// <summary>
     /// Determine if 'word1' and 'word2' are anagrams.  An anagram
     /// is when the same letters in a word are re-organized into a 
@@ -65,11 +90,45 @@ public static class SetsAndMaps
     /// using the [] notation.
     /// </summary>
     public static bool IsAnagram(string word1, string word2)
-    {
-        // TODO Problem 3 - ADD YOUR CODE HERE
+{
+    // Remove spaces and convert to lowercase
+    word1 = word1.Replace(" ", "").ToLower();
+    word2 = word2.Replace(" ", "").ToLower();
+    
+    // If lengths differ, they can't be anagrams
+    if (word1.Length != word2.Length)
         return false;
+    
+    // Count frequency of each letter in word1
+    var letterCount = new Dictionary<char, int>();
+    foreach (var letter in word1)
+    {
+        if (letterCount.ContainsKey(letter))
+            letterCount[letter]++;
+        else
+            letterCount[letter] = 1;
     }
-
+    
+    // Subtract frequency for each letter in word2
+    foreach (var letter in word2)
+    {
+        if (!letterCount.ContainsKey(letter))
+            return false;
+            
+        letterCount[letter]--;
+        if (letterCount[letter] < 0)
+            return false;
+    }
+    
+    // Check if all counts are zero
+    foreach (var count in letterCount.Values)
+    {
+        if (count != 0)
+            return false;
+    }
+    
+    return true;
+}
     /// <summary>
     /// This function will read JSON (Javascript Object Notation) data from the 
     /// United States Geological Service (USGS) consisting of earthquake data.
@@ -101,6 +160,14 @@ public static class SetsAndMaps
         // on those classes so that the call to Deserialize above works properly.
         // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
         // 3. Return an array of these string descriptions.
-        return [];
+        var results = new List<string>();
+        foreach (var feature in featureCollection.Features)
+    {
+        var place = feature.Properties.Place;
+        var mag = feature.Properties.Mag;
+        results.Add($"{place} - Mag {mag}");
+    }
+    
+    return results.ToArray();
     }
 }
